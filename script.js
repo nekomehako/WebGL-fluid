@@ -27,6 +27,9 @@ window.onload = function(){
     // メインのフレームバッファーオブジェクトの作成
     const backFrameBuffer = create_fbo(c.width, c.height);
 
+    const initf_shader = create_shader("fsInit");
+    const initprg = create_program(v_shader, initf_shader);
+
     const passf_shader = create_shader("fsp");
     const passprg = create_program(v_shader, passf_shader);
     // preColor texture保存用フレームバッファーオブジェクトの作成
@@ -55,6 +58,10 @@ window.onload = function(){
     ]);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
 
+    const initprgUL = {
+        resolution : gl.getUniformLocation(initprg, 'resolution'),
+        tex        : gl.getUniformLocation(initprg, 'tex'),
+    };
     const backprgUL = {
         resolution : gl.getUniformLocation(backprg, 'resolution'),
         omouse     : gl.getUniformLocation(backprg, 'omouse'),
@@ -75,10 +82,11 @@ window.onload = function(){
         const tex = create_texture(img);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, saveFrameBuffer.f);
-        gl.useProgram(passprg);
+        gl.useProgram(initprg);
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        setUniformTexture(passprgUL['preColor'], 0, tex);
+        gl.uniform2f(initprgUL['resolution'], c.width, c.height);
+        setUniformTexture(initprgUL['tex'], 0, tex);
         gl.drawElements(gl.TRIANGLES, indices.length , gl.UNSIGNED_SHORT, 0);
         loop();
     };
